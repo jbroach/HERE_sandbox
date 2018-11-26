@@ -54,17 +54,17 @@ def main():
     tmc_format = {'source_id': source_id}
     df_tmc = pd.DataFrame.from_dict(tmc_format)
 
+    df_tmc_lengths = pd.read_csv('may_2017_raw_lengths.csv')
+    df_tmc_lengths['total_length_miles'] = df_tmc_lengths['total_length_km'] * .621371
+
     hours = list(range(0, 24))
     for hour in hours:
         df_time = tt_by_hour(df, hour)
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
-    df_tmc.to_csv('may_2017.csv', index=False)
-
-    # df_tmc_lengths = pd.read_csv('TMC_Identification.csv', usecols=['tmc', 'miles'])
-    # df_tmc_lengths['kms'] = df_tmc_lengths['miles'] * 1.60934
-    # df_final = pd.merge(df_tmc_lengths, df_tmc, left_on='tmc', right_on='source_id', how='left')
-    # df_final.to_csv('may_2017_lengths.csv', index=False)
+    #df_tmc.to_csv('may_2017.csv', index=False)
+    df_final = pd.merge(df_tmc, df_tmc_lengths, on='source_id', how='left')
+    df_final.to_csv('may_2017.csv', index=False)
 
     endTime = dt.datetime.now()
     print("Script finished in {0}.".format(endTime - startTime))
