@@ -67,10 +67,10 @@ def main():
         df_time = tt_by_hour(df, hour)
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
-    df_final = pd.merge(df_tmc, df_tmc_lengths, on='source_id', how='left')
+    df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
     df_final.to_csv('may_2017.csv', index=False)
-
     endTime = dt.datetime.now()
+    
     print("Script finished in {0}.".format(endTime - startTime))
 
 
