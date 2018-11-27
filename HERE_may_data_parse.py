@@ -11,8 +11,6 @@ import datetime as dt
 import os
 
 drive_path = 'C:/Users/saavedrak/metro_work/HERE_sandbox/data/'
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', 500)
 
 
 def tt_by_hour(df_tt, hour):
@@ -20,8 +18,8 @@ def tt_by_hour(df_tt, hour):
     df_tt = df_tt[df_tt['utc_time_id'].dt.hour.isin([hour])]
     tmc_operations = ({'avg_travel_time': 'mean'})
     df_tt = df_tt.groupby('source_id', as_index=False).agg(tmc_operations)
-
-    df_tt['tt_secs'] = df_tt['avg_travel_time'] * 60
+    SECS_IN_MIN = 60
+    df_tt['tt_secs'] = df_tt['avg_travel_time'] * SECS_IN_MIN
     df_tt = df_tt.drop(columns=['avg_travel_time'])
     df_avg_tt = df_tt.rename(
         columns={'tt_secs': 'hour_{}_tt_seconds'.format(hour)})
@@ -30,6 +28,7 @@ def tt_by_hour(df_tt, hour):
 
 
 def assemble_dataset():
+    """Assembles all files in /data folder into one dataset"""
     df_full = pd.DataFrame()
     for file in os.listdir(drive_path):
         print('Loading {}'.format(file))
@@ -58,9 +57,9 @@ def main():
     df_tmc = pd.DataFrame.from_dict(tmc_format)
 
     df_tmc_lengths = pd.read_csv('may_2017_raw_lengths.csv')
-    FEET_IN_KM = .621371
+    MILES_IN_KM = 0.621371
     df_tmc_lengths['total_length_miles'] = (df_tmc_lengths['total_length_km'] *
-                                            FEET_IN_KM)
+                                            MILES_IN_KM)
 
     hours = list(range(0, 24))
     for hour in hours:
@@ -68,9 +67,9 @@ def main():
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
     df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
-    df_final.to_csv('may_2017.csv', index=False)
+    df_final.to_csv('may_2017_HERE.csv', index=False)
     endTime = dt.datetime.now()
-    
+
     print("Script finished in {0}.".format(endTime - startTime))
 
 
