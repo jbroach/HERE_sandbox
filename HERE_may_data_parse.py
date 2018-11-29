@@ -10,7 +10,7 @@ import pandas as pd
 import datetime as dt
 import os
 
-drive_path = 'C:/Users/saavedrak/metro_work/HERE_sandbox/data/'
+drive_path = '/home/remote/KS_projects/test_dev/HERE_sandbox/data/'
 
 
 def tt_by_hour(df_tt, hour):
@@ -35,7 +35,9 @@ def assemble_dataset():
         df_temp = pd.read_csv(
             os.path.join(os.path.dirname(__file__), drive_path, file),
             usecols=['utc_time_id', 'source_ref', 'source_id',
-                     'avg_travel_time', 'avg_speed'])
+                     'avg_travel_time', 'avg_speed'],
+            dtype={'utc_time_id':str, 'source_ref':str, 'source_id':str, 
+                    'avg_travel_time':float, 'avg_speed':float})
         df_full = pd.concat([df_full, df_temp])
 
     return df_full
