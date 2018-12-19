@@ -16,7 +16,7 @@ drive_path = 'C:/Users/saavedrak/metro_work/HERE_sandbox/data/'
 
 def tt_by_hour(df_tt, hour):
     """Process hourly travel time averages."""
-    df_tt = df_tt[df_tt['utc_time_id'].dt.hour.isin([hour])]
+    df_tt = df_tt[df_tt['PDT'].dt.hour.isin([hour])]
     tmc_operations = ({'avg_travel_time': 'mean',
                        'hour_{0}_5th_pct'.format(hour).format(hour): lambda x: np.percentile(x, 5),
                        'hour_{0}_95th_pct'.format(hour).format(hour): lambda x: np.percentile(x, 95)})
@@ -54,6 +54,9 @@ def main():
     df = assemble_dataset()
     df['utc_time_id'] = pd.to_datetime(df['utc_time_id'], errors='coerce',
                                        infer_datetime_format=True)
+    df.index = pd.to_datetime(df['utc_time_id'], errors='coerce')
+    df.index = df.index.tz_localize('UTC')
+    df['PDT'] = df.index.tz_convert('PST8PDT')
 
     df = df.loc[df['source_ref'] == 'tmc']
     df = df.dropna(how='all')
@@ -75,7 +78,7 @@ def main():
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
     df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
-    df_final.to_csv('may_2017_HERE_pctile.csv', index=False)
+    df_final.to_csv('may_2017_HERE_raw.csv', index=False)
     endTime = dt.datetime.now()
 
     print("Script finished in {0}.".format(endTime - startTime))
