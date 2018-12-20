@@ -15,17 +15,22 @@ drive_path = 'C:/Users/saavedrak/metro_work/HERE_sandbox/data/'
 
 
 def tt_by_hour(df_tt, hour):
-    """Process hourly travel time averages."""
+    """Process hourly travel time averages with percentile calculations."""
     df_tt = df_tt[df_tt['PDT'].dt.hour.isin([hour])]
     tmc_operations = ({'avg_travel_time': 'mean',
-                       'hour_{0}_5th_pct'.format(hour).format(hour): lambda x: np.percentile(x, 5),
-                       'hour_{0}_95th_pct'.format(hour).format(hour): lambda x: np.percentile(x, 95)})
-    
+                       'hour_{0}_5th_pct'.format(hour).format(hour): (
+                           lambda x: np.percentile(x, 5)),
+                       'hour_{0}_95th_pct'.format(hour).format(hour): (
+                           lambda x: np.percentile(x, 95))})
+
     df_tt = df_tt.groupby('source_id', as_index=False).agg(tmc_operations)
+
     SECS_IN_MIN = 60
     df_tt['tt_secs'] = df_tt['avg_travel_time'] * SECS_IN_MIN
-    df_tt['hour_{0}_5th_pct'.format(hour).format(hour)] = df_tt['hour_{0}_5th_pct'.format(hour).format(hour)] * SECS_IN_MIN
-    df_tt['hour_{0}_95th_pct'.format(hour).format(hour)] = df_tt['hour_{0}_95th_pct'.format(hour).format(hour)] * SECS_IN_MIN
+    df_tt['hour_{0}_5th_pct'.format(hour).format(hour)] = (
+        df_tt['hour_{0}_5th_pct'.format(hour).format(hour)] * SECS_IN_MIN)
+    df_tt['hour_{0}_95th_pct'.format(hour).format(hour)] = (
+        df_tt['hour_{0}_95th_pct'.format(hour).format(hour)] * SECS_IN_MIN)
     df_tt = df_tt.drop(columns=['avg_travel_time'])
     df_avg_tt = df_tt.rename(
         columns={'tt_secs': 'hour_{}_tt_seconds'.format(hour)})
@@ -60,7 +65,7 @@ def main():
     df.index = df.index.tz_localize('UTC')
     df['PDT'] = df.index.tz_convert('PST8PDT')
 
-    #df = df.loc[df['source_ref'] == 'tmc']
+    df = df.loc[df['source_ref'] == 'tmc']
     df = df.dropna(how='all')
 
     source_id = df['source_id'].drop_duplicates().values.tolist()
@@ -79,9 +84,9 @@ def main():
         df_time = tt_by_hour(df, hour)
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
-    #df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
-    #df_final.to_csv('may_2017_HERE_raw.csv', index=False)
-    
+    df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
+    df_final.to_csv('may_2017_HERE_raw.csv', index=False)
+
     endTime = dt.datetime.now()
 
     print("Script finished in {0}.".format(endTime - startTime))
