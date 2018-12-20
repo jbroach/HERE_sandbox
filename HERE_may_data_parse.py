@@ -52,13 +52,15 @@ def main():
     print('Script started at {0}'.format(startTime))
 
     df = assemble_dataset()
+
+    # Convert UTC to PDT (GMT-7)
     df['utc_time_id'] = pd.to_datetime(df['utc_time_id'], errors='coerce',
                                        infer_datetime_format=True)
     df.index = pd.to_datetime(df['utc_time_id'], errors='coerce')
     df.index = df.index.tz_localize('UTC')
     df['PDT'] = df.index.tz_convert('PST8PDT')
 
-    df = df.loc[df['source_ref'] == 'tmc']
+    #df = df.loc[df['source_ref'] == 'tmc']
     df = df.dropna(how='all')
 
     source_id = df['source_id'].drop_duplicates().values.tolist()
@@ -77,8 +79,9 @@ def main():
         df_time = tt_by_hour(df, hour)
         df_tmc = pd.merge(df_tmc, df_time, on='source_id', how='left')
 
-    df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
-    df_final.to_csv('may_2017_HERE_raw.csv', index=False)
+    #df_final = pd.merge(df_tmc_lengths, df_tmc, on='source_id', how='left')
+    #df_final.to_csv('may_2017_HERE_raw.csv', index=False)
+    
     endTime = dt.datetime.now()
 
     print("Script finished in {0}.".format(endTime - startTime))
